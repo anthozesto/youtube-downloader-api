@@ -7,29 +7,41 @@ module.exports = async (req, res) => {
     }
     
     try {
-      const response = await fetch('https://api.cobalt.tools/api/json', {
+      // Nouvelle API Cobalt v9
+      const response = await fetch('https://api.cobalt.tools/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           url: url,
-          vQuality: '720',
-          filenamePattern: 'basic',
-          isAudioOnly: false
+          videoQuality: '720'
         })
       });
       
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
       const data = await response.json();
       
-      if (data.status === 'redirect' || data.status === 'stream') {
-        // Redirection vers le fichier de téléchargement
+      // Vérifier le statut de la réponse
+      if (data.status === 'redirect' && data.url) {
+        // Redirection vers le fichier
         return res.redirect(data.url);
+      } else if (data.status === 'picker' && data.picker && data.picker.length > 0) {
+        // Plusieurs qualités disponibles, prendre la première
+        return res.redirect(data.picker[0].url);
+      } else if (data.status === 'error') {
+        return res.status(400).json({ 
+          error: 'Erreur de téléchargement',
+          message: data.error?.code || 'Vidéo non disponible'
+        });
       } else {
         return res.status(400).json({ 
-          error: 'Impossible de télécharger',
-          message: data.text || 'Vidéo non disponible'
+          error: 'Format de réponse inattendu',
+          data: data
         });
       }
       
