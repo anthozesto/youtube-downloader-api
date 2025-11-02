@@ -1,39 +1,44 @@
 // api/download.js
-// api/download.js
-const ytdl = require('@distube/ytdl-core');
-
 module.exports = async (req, res) => {
-  try {
     const url = req.query.url;
     
     if (!url) {
-      return res.status(400).json({ error: 'URL manquante' });
+      return res.status(400).json({ error: 'URL YouTube manquante' });
     }
     
-    if (!ytdl.validateURL(url)) {
-      return res.status(400).json({ error: 'URL YouTube invalide' });
+    try {
+      const response = await fetch('https://api.cobalt.tools/api/json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          url: url,
+          vQuality: '720',
+          filenamePattern: 'basic',
+          isAudioOnly: false
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.status === 'redirect' || data.status === 'stream') {
+        // Redirection vers le fichier de téléchargement
+        return res.redirect(data.url);
+      } else {
+        return res.status(400).json({ 
+          error: 'Impossible de télécharger',
+          message: data.text || 'Vidéo non disponible'
+        });
+      }
+      
+    } catch (error) {
+      return res.status(500).json({ 
+        error: 'Erreur serveur',
+        details: error.message 
+      });
     }
-    
-    // Récupérer les infos de la vidéo
-    const info = await ytdl.getInfo(url);
-    const title = info.videoDetails.title.replace(/[^\w\s]/gi, '').substring(0, 50);
-    
-    // Configurer les headers
-    res.setHeader('Content-Disposition', `attachment; filename="${title}.mp4"`);
-    res.setHeader('Content-Type', 'video/mp4');
-    
-    // Télécharger en qualité moyenne (pour éviter timeout)
-    ytdl(url, {
-      quality: 'highestaudio',
-      filter: 'audioandvideo'
-    }).pipe(res);
-    
-  } catch (error) {
-    console.error('Erreur:', error);
-    res.status(500).json({ 
-      error: 'Erreur lors du téléchargement',
-      details: error.message 
-    });
-  }
-};
+  };
+  
 

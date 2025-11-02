@@ -8,8 +8,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@distube/ytdl-core": "^4.16.12"
-  }
+  "license": "ISC"
 }
