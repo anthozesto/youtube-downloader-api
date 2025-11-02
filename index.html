@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Downloader API</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+    input { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
+    button { padding: 12px 20px; background: #FF0000; color: white; border: none; cursor: pointer; font-size: 16px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>🎬 YouTube Downloader API</h1>
+  <p>Entre l'URL d'une vidéo YouTube :</p>
+  <input type="url" id="youtube-url" placeholder="https://www.youtube.com/watch?v=...">
+  <button onclick="downloadVideo()">Télécharger</button>
+  
+  <script>
+    function downloadVideo() {
+      const url = document.getElementById('youtube-url').value;
+      if (!url) {
+        alert('Entre une URL YouTube !');
+        return;
+      }
+      window.location.href = '/api/download?url=' + encodeURIComponent(url);
+    }
+  </script>
+</body>
+</html>
